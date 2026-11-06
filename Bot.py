@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 from telegram import InlineKeyboardButton as Btn, InlineKeyboardMarkup as Markup, Update
 from telegram.constants import ParseMode
-from telegram.error import BadRequest
+from telegram.error import BadRequest, InvalidToken
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
@@ -28,6 +28,7 @@ from Content import QUESTIONS, TOTAL, UI
 
 load_dotenv()
 logging.basicConfig(format="%(asctime)s %(levelname)s %(name)s: %(message)s", level=logging.INFO)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 log = logging.getLogger("assessment-bot")
 
 TOKEN = os.getenv("BOT_TOKEN", "")
@@ -467,9 +468,12 @@ def main():
     app.add_handler(CallbackQueryHandler(on_button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
     app.add_handler(MessageHandler(~filters.TEXT & ~filters.COMMAND, on_non_text))
-    log.info("Bot started.")
+    log.info("Starting bot polling.")
     asyncio.set_event_loop(asyncio.new_event_loop())
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    try:
+        app.run_polling(allowed_updates=Update.ALL_TYPES)
+    except InvalidToken:
+        raise SystemExit("Telegram rejected BOT_TOKEN. Generate a new token with @BotFather and update the service variable.") from None
 
 
 if __name__ == "__main__":
