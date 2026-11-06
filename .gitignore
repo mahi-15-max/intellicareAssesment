@@ -1,0 +1,10 @@
+.env
+.venv/
+.venv-1/
+venv/
+__pycache__/
+*.py[cod]
+assessment.db
+assessment.db-journal
+assessment.db-shm
+assessment.db-wal
